@@ -4,6 +4,13 @@ import java.sql.*;
 
 public class Admin {
 
+    public static String[] drivers = {"AlexanderAlbon", "FernandoAlonso", "ValtteriBottas", "PierreGasly", "LewisHamilton", "NicholasLatifi", "CharlesLeclerc", "KevinMagnussen",
+    "LandoNorris", "EstebanOcon", "SergioPerez", "DanielRiccardo", "GeorgeRussell", "CarlosSainz", "MickSchumacher", "LanceStroll", "YukiTsunoda", "MaxVerstappen",
+        "SebastianVettel", "GuanyuZhou"};
+    public static String[] circuits = {"Bahrain","Saudi Arabia", "Australia", "Emilia-Romagna", "Miami", "Spain", "Monaco", "Azerbaijan", "Canada", "Britain", "Austria", "France", "Hungary",
+            "Belgium", "Netherlands", "Italy", "Singapore", "Japan", "USA", "Mexico", "Sao Paulo", "Abu Dhabi"};
+    public static int currentCircuit = 0;
+
     public static String getEmail(String email) {
         boolean valid = false;
         while (!valid) {
@@ -54,7 +61,8 @@ public class Admin {
         }
     }
 
-    public static void showBalance (String email) {
+    public static String showBalance (String email) {
+        String balance = "";
         String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
 
         try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
@@ -67,19 +75,18 @@ public class Admin {
 
             while(rs.next()) {
                 if (email.equals(rs.getString("Email"))) {
-                    System.out.println("£" + rs.getString("Balance"));
+                    balance = ("£" + rs.getString("Balance"));
                 }
             }
         }
         catch (Exception e) {
             System.out.println("Error in the SQL class: " + e);
         }
+        return balance;
     }
 
     public static void displayMainMenu() {
-        String[] circuits = {"Bahrain","Saudi Arabia", "Australia", "Imola", "Miami", "Spain", "Monaco", "Azerbaijan", "Canada", "Britain", "Austria", "France", "Hungary",
-        "Belgium", "Netherlands", "Italy", "Singapore", "Japan", "USA", "Mexico", "Sao Paulo", "Abu Dhabi"};
-        int currentCircuit = 0;
+        System.out.println("");
         System.out.println("A) Start next race in " + circuits[currentCircuit]);
         System.out.println("B) Simple explanation of Formula 1");
         System.out.println("C) Explanation of betting system");
@@ -87,6 +94,34 @@ public class Admin {
     }
 
     public static void preQualifyingBets() {
+        displayBetMenu();
+        String ans = "";
+        while (!ans.equals("D")) {
+            ans = Main.getInput("Enter the letter of the option you would like to chose");
+            if (ans.equals("A")) {
+                String typeOfBet = "Pole Position";
+            }
+            if (ans.equals("B")) {
+                String typeOfBet = "Race Winner";
+            }
+            if (ans.equals("C")) {
+                String typeOfBet = "Finish Race on Podium";
+            }
 
+            // Need to show drivers and their odds
+        }
+        String driver = Main.getInput("Which driver would you like to bet on? ");
+        // Need to do validity check
+        int amountBet = Main.getIntInput("How much would you like to bet? ");
+        // Need to do validity check
+    }
+
+    public static void displayBetMenu() {
+        System.out.println("What would you like to bet on before qualifying?");
+        System.out.println("");
+        System.out.println("A) Pole Position");
+        System.out.println("B) Race Winner");
+        System.out.println("C) Finish Race on Podium");
+        System.out.println("D) Do Not Bet Simulate Qualifying");
     }
 }

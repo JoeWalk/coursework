@@ -28,13 +28,15 @@ public class Main {
                 Admin.writeToDatabase(email,password);
             }
         }
-        Admin.showBalance(email);
+        System.out.println("\nYour current balance is " + Admin.showBalance(email));;
 
         Admin.displayMainMenu();
 
-        Character ans = ' ';
-        while (ans != 'Q') {
-            if (ans == 'A') {
+        String ans = "";
+
+        while (!ans.equals("Q")) {
+            ans = getInput("Enter the letter of the option you would like to chose");
+            if (ans.equals("A")) {
                 Admin.preQualifyingBets();
             }
         }
@@ -45,6 +47,12 @@ public class Main {
         System.out.println(prompt);
         Scanner input = new Scanner(System.in);
         return input.nextLine();
+    }
+
+    public static int getIntInput(String prompt) {
+        System.out.println(prompt);
+        Scanner input = new Scanner(System.in);
+        return input.nextInt();
     }
 
     public static boolean logIn(String email, String password) {
