@@ -1,13 +1,14 @@
 package com.company;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class Admin {
 
     public static String[] drivers = {"AlexanderAlbon", "FernandoAlonso", "ValtteriBottas", "PierreGasly", "LewisHamilton", "NicholasLatifi", "CharlesLeclerc", "KevinMagnussen",
-    "LandoNorris", "EstebanOcon", "SergioPerez", "DanielRiccardo", "GeorgeRussell", "CarlosSainz", "MickSchumacher", "LanceStroll", "YukiTsunoda", "MaxVerstappen",
-        "SebastianVettel", "GuanyuZhou"};
-    public static String[] circuits = {"Bahrain","Saudi Arabia", "Australia", "Emilia-Romagna", "Miami", "Spain", "Monaco", "Azerbaijan", "Canada", "Britain", "Austria", "France", "Hungary",
+            "LandoNorris", "EstebanOcon", "SergioPerez", "DanielRicciardo", "GeorgeRussell", "CarlosSainz", "MickSchumacher", "LanceStroll", "YukiTsunoda", "MaxVerstappen",
+            "SebastianVettel", "GuanyuZhou"};
+    public static String[] circuits = {"Bahrain", "Saudi Arabia", "Australia", "Emilia-Romagna", "Miami", "Spain", "Monaco", "Azerbaijan", "Canada", "Britain", "Austria", "France", "Hungary",
             "Belgium", "Netherlands", "Italy", "Singapore", "Japan", "USA", "Mexico", "Sao Paulo", "Abu Dhabi"};
     public static int currentCircuit = 0;
 
@@ -28,16 +29,15 @@ public class Admin {
 
     public static String getPassword(String password) {
         boolean valid = false;
-        while(!valid) {
+        while (!valid) {
             password = Main.getInput("Please enter the password you would like to use");
             if (password.length() > 6) {
                 valid = true;
-            }
-            else{
+            } else {
                 System.out.println("Password is too short");
             }
         }
-        return(password);
+        return (password);
     }
 
     public static void writeToDatabase(String email, String password) {
@@ -55,13 +55,12 @@ public class Admin {
             preparedStatement.setInt(3, 100);
 
             int row = preparedStatement.executeUpdate();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("Error in the SQL class: " + e);
         }
     }
 
-    public static String showBalance (String email) {
+    public static String showBalance(String email) {
         String balance = "";
         String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
 
@@ -73,13 +72,12 @@ public class Admin {
 
             ResultSet rs = stmt.executeQuery(sql);
 
-            while(rs.next()) {
+            while (rs.next()) {
                 if (email.equals(rs.getString("Email"))) {
                     balance = ("£" + rs.getString("Balance"));
                 }
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("Error in the SQL class: " + e);
         }
         return balance;
@@ -96,25 +94,39 @@ public class Admin {
     public static void preQualifyingBets() {
         displayBetMenu();
         String ans = "";
+        String typeOfBet = "";
         while (!ans.equals("D")) {
             ans = Main.getInput("Enter the letter of the option you would like to chose");
             if (ans.equals("A")) {
-                String typeOfBet = "Pole Position";
-            }
-            if (ans.equals("B")) {
-                String typeOfBet = "Race Winner";
-            }
-            if (ans.equals("C")) {
-                String typeOfBet = "Finish Race on Podium";
+                typeOfBet = "Pole Position";
+                for (int i = 0; i < 20; i++) {
+                    String driver = drivers[i];
+                    int odds = getOdds(typeOfBet, driver);
+                }
             }
 
-            // Need to show drivers and their odds
+            if (ans.equals("B")) {
+                typeOfBet = "Race Winner";
+                for (int i = 0; i < 20; i++) {
+                    String driver = drivers[i];
+                    int odds = getOdds(typeOfBet, driver);
+                }
+            }
+            if (ans.equals("C")) {
+                typeOfBet = "Finish Race on Podium";
+                for (int i = 0; i < 20; i++) {
+                    String driver = drivers[i];
+                    int odds = getOdds(typeOfBet, driver);
+                }
+            }
+
+                        // Need to show drivers and their odds
         }
-        String driver = Main.getInput("Which driver would you like to bet on? ");
-        // Need to do validity check
-        int amountBet = Main.getIntInput("How much would you like to bet? ");
-        // Need to do validity check
     }
+                String chosenDriver = Main.getInput("Which driver would you like to bet on? ");
+                // Need to do validity check
+                int amountBet = Main.getIntInput("How much would you like to bet? ");
+                // Need to do validity check
 
     public static void displayBetMenu() {
         System.out.println("What would you like to bet on before qualifying?");
@@ -123,5 +135,83 @@ public class Admin {
         System.out.println("B) Race Winner");
         System.out.println("C) Finish Race on Podium");
         System.out.println("D) Do Not Bet Simulate Qualifying");
+    }
+
+    public static int getOdds(String typeOfBet, String driver) {
+        int odds = 0;
+        ArrayList<Integer> oddsArray = new ArrayList<>();
+        int averageOfYear = 0;
+
+        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+
+        try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
+
+            Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+            String sql = "SELECT Year, GrandPrix, Grid FROM " + driver;
+
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while(rs.next()) {
+                if ((rs.getInt("Year") == 2022) && (rs.getString("GrandPrix").equals(circuits[currentCircuit]))) {
+                    averageOfYear = getAverageOfYear(rs.getString("Year"), driver);
+                    for (int i = 0; i < 5; i++) {
+                        oddsArray.add(rs.getInt("Grid") - averageOfYear);
+                    }
+                }
+                if ((rs.getString("GrandPrix")).equals(circuits[currentCircuit])) {
+                    averageOfYear = getAverageOfYear(rs.getString("Year"), driver);
+                    for (int i = 0; i < 4; i++) {
+                        oddsArray.add(rs.getInt("Grid") - averageOfYear);
+                    }
+                }
+                if ((rs.getInt("Year")) == 2022) {
+                    averageOfYear = getAverageOfYear(rs.getString("Year"), driver);
+                    for (int i = 0; i < 3; i++) {
+                        oddsArray.add(rs.getInt("Grid") - averageOfYear);
+                    }
+                }
+            }
+        }
+        catch (Exception e) {
+            System.out.println("Error in the SQL class: " + e);
+        }
+
+        return odds;
+    }
+
+    public static int getAverageOfYear (String year, String driver) {
+
+        // Need to caculate averages at start of calculate odds bit
+
+
+        ArrayList<Integer> averageArray = new ArrayList<>();
+        int average = 0;
+
+        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+
+        try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
+
+            Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+            String sql = "SELECT * FROM " + driver;
+
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while(rs.next()) {
+                if (rs.getInt("Year") == 2022) {
+                    averageArray.add(rs.getInt("Grid"));
+                }
+            }
+        }
+        catch (Exception e) {
+            System.out.println("Error in the SQL class: " + e);
+        }
+        for (int i = 0; i < averageArray.size(); i++) {
+            average = average + averageArray.get(i);
+        }
+        average = average / averageArray.size();
+
+        return (average);
     }
 }
