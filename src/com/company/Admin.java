@@ -140,7 +140,9 @@ public class Admin {
     public static int getOdds(String typeOfBet, String driver) {
         int odds = 0;
         ArrayList<Integer> oddsArray = new ArrayList<>();
-        int averageOfYear = 0;
+        String year = "2022";
+        int averageOfYear = getAverageOfYear(year, driver);
+        int averageOfDifYear = 0;
 
         String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
 
@@ -154,19 +156,17 @@ public class Admin {
 
             while(rs.next()) {
                 if ((rs.getInt("Year") == 2022) && (rs.getString("GrandPrix").equals(circuits[currentCircuit]))) {
-                    averageOfYear = getAverageOfYear(rs.getString("Year"), driver);
                     for (int i = 0; i < 5; i++) {
                         oddsArray.add(rs.getInt("Grid") - averageOfYear);
                     }
                 }
                 if ((rs.getString("GrandPrix")).equals(circuits[currentCircuit])) {
-                    averageOfYear = getAverageOfYear(rs.getString("Year"), driver);
                     for (int i = 0; i < 4; i++) {
+                        averageOfDifYear = getAverageOfYear(rs.getString("Year"), driver);
                         oddsArray.add(rs.getInt("Grid") - averageOfYear);
                     }
                 }
                 if ((rs.getInt("Year")) == 2022) {
-                    averageOfYear = getAverageOfYear(rs.getString("Year"), driver);
                     for (int i = 0; i < 3; i++) {
                         oddsArray.add(rs.getInt("Grid") - averageOfYear);
                     }
@@ -177,13 +177,12 @@ public class Admin {
             System.out.println("Error in the SQL class: " + e);
         }
 
+        odds = fillOutOdds(oddsArray, averageOfYear);
+
         return odds;
     }
 
     public static int getAverageOfYear (String year, String driver) {
-
-        // Need to caculate averages at start of calculate odds bit
-
 
         ArrayList<Integer> averageArray = new ArrayList<>();
         int average = 0;
@@ -213,5 +212,29 @@ public class Admin {
         average = average / averageArray.size();
 
         return (average);
+    }
+
+    public static int fillOutOdds (ArrayList <Integer> oddsArray, int averageOfYear) {
+        int odds = 0;
+        int fill = 0;
+        boolean valid = false;
+        ArrayList<Integer> newOddsArray = new ArrayList<>();
+        for (int length = 0; length < oddsArray.size(); length++) {
+            newOddsArray.add(oddsArray.get(length) + averageOfYear);
+        }
+        for (int i = 1; i < 21; i++) {
+            valid = false;
+            for (int length = 0; length < newOddsArray.size(); length++){
+                if (newOddsArray.get(length) == i){
+                    valid = true;
+                }
+            }
+            if (valid == false) {
+                newOddsArray.add(i);
+            }
+        }
+        // Some error here
+
+        return odds;
     }
 }
