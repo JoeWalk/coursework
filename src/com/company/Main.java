@@ -52,7 +52,8 @@ public class Main {
         boolean emailValid = false;
         boolean passwordValid = false;
 
-        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+        //String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+        String DatabaseLocation = "jdbc:ucanaccess://iCloud Drive//Documents//Computer Science//Coursework//database.accdb";
 
         try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
 

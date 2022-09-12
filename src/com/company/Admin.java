@@ -34,7 +34,8 @@ public class Admin {
     }
 
     public static void writeToDatabase(String email, String password) {
-        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+        //String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+        String DatabaseLocation = "jdbc:ucanaccess://iCloud Drive//Documents//Computer Science//Coursework//database.accdb";
 
         try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
 
