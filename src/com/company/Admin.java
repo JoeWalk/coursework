@@ -41,8 +41,8 @@ public class Admin {
     }
 
     public static void writeToDatabase(String email, String password) {
-        //String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
-        String DatabaseLocation = "jdbc:ucanaccess://iCloud Drive//Documents//Computer Science//Coursework//database.accdb";
+
+        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
 
         try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
 
@@ -142,8 +142,8 @@ public class Admin {
         int odds = 0;
         ArrayList<Integer> oddsArray = new ArrayList<>();
         String year = "2022";
-        int averageOfYear = getAverageOfYear(year, driver);
-        int averageOfDifYear = 0;
+        ArrayList<Integer> averageOfYears = new ArrayList<>();
+        averageOfYears = getAverageOfYear(driver);
 
         String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
 
@@ -158,18 +158,17 @@ public class Admin {
             while(rs.next()) {
                 if ((rs.getInt("Year") == 2022) && (rs.getString("GrandPrix").equals(circuits[currentCircuit]))) {
                     for (int i = 0; i < 5; i++) {
-                        oddsArray.add(rs.getInt("Grid") - averageOfYear);
+                        oddsArray.add(rs.getInt("Grid") - averageOfYears.get(0));
                     }
                 }
                 if ((rs.getString("GrandPrix")).equals(circuits[currentCircuit])) {
                     for (int i = 0; i < 4; i++) {
-                        averageOfDifYear = getAverageOfYear(rs.getString("Year"), driver);
-                        oddsArray.add(rs.getInt("Grid") - averageOfYear);
+                        oddsArray.add(rs.getInt("Grid") - averageOfYears.get(2022 - (rs.getInt("Year"))));
                     }
                 }
                 if ((rs.getInt("Year")) == 2022) {
                     for (int i = 0; i < 3; i++) {
-                        oddsArray.add(rs.getInt("Grid") - averageOfYear);
+                        oddsArray.add(rs.getInt("Grid") - averageOfYears.get(0));
                     }
                 }
             }
@@ -178,14 +177,18 @@ public class Admin {
             System.out.println("Error in the SQL class: " + e);
         }
 
-        odds = fillOutOdds(oddsArray, averageOfYear);
+        odds = fillOutOdds(oddsArray, averageOfYears);
 
         return odds;
     }
 
-    public static int getAverageOfYear (String year, String driver) {
+    public static ArrayList<Integer> getAverageOfYear (String driver) {
 
+        ArrayList<Integer> averageOfYears = new ArrayList<>();
         ArrayList<Integer> averageArray = new ArrayList<>();
+        ArrayList<Integer> years = new ArrayList<>();
+        years.add(2022);
+        boolean valid = false;
         int average = 0;
 
         String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
@@ -199,29 +202,51 @@ public class Admin {
             ResultSet rs = stmt.executeQuery(sql);
 
             while(rs.next()) {
-                if (rs.getInt("Year") == 2022) {
-                    averageArray.add(rs.getInt("Grid"));
+                for (int i = 0; i < (years.size()); i++){
+                    if ((rs.getInt("Year") == (years.get(i)))){
+                        valid = true;
+                    }
+                }
+                if (!valid) {
+                    years.add(rs.getInt("Year"));
+                    valid = false;
                 }
             }
-        }
-        catch (Exception e) {
-            System.out.println("Error in the SQL class: " + e);
-        }
-        for (int i = 0; i < averageArray.size(); i++) {
-            average = average + averageArray.get(i);
-        }
-        average = average / averageArray.size();
 
-        return (average);
+            // Here down need to be in separate try catch
+
+            for (int i = 0; i < (years.size()); i++) {
+                while (rs.next()) {
+                    if ((rs.getInt("Year") == (years.get(i)))) {
+                        averageArray.add(rs.getInt("Grid"));
+                    }
+                }
+            }
+
+            for(int i = 0; i < (years.size()); i++){
+                for (int a = 0; a < averageArray.size(); a++) {
+                    average = average + averageArray.get(i);
+                }
+                average = average / averageArray.size();
+                averageOfYears.add(average);
+             }
+        }
+    catch (Exception e) {
+        System.out.println("Error in the SQL class: " + e);
     }
 
-    public static int fillOutOdds (ArrayList <Integer> oddsArray, int averageOfYear) {
+        return (averageOfYears);
+    }
+
+
+    public static int fillOutOdds (ArrayList <Integer> oddsArray, ArrayList<Integer> averageOfYear) {
         int odds = 0;
         int fill = 0;
         boolean valid = false;
         ArrayList<Integer> newOddsArray = new ArrayList<>();
         for (int length = 0; length < oddsArray.size(); length++) {
-            newOddsArray.add(oddsArray.get(length) + averageOfYear);
+            fill = oddsArray.get(length) + averageOfYear.get(0);
+            newOddsArray.add(fill);
         }
         for (int i = 1; i < 21; i++) {
             valid = false;
