@@ -1,25 +1,24 @@
 package com.company;
 
 public class Bets {
-    private String email;
-    private int balance;
-    private String typeOfBet;
-    private int odds;
-    private String driver;
-    private int amountBet;
 
-    public Bets(String email, int balance, String typeOfBet, int odds, String driver, int amountBet) {
+    private String email;
+    private String chosenDriver;
+    private String typeOfBet;
+    private int betAmount;
+    private double oddsOfBet;
+
+    public Bets(String email, String chosenDriver, String typeOfBet, int betAmount, double oddsOfBet) {
         this.email = email;
-        this.balance = balance;
+        this.chosenDriver = chosenDriver;
         this.typeOfBet = typeOfBet;
-        this.odds = odds;
-        this.driver = driver;
-        this.amountBet = amountBet;
+        this.betAmount = betAmount;
+        this.oddsOfBet = oddsOfBet;
     }
 
     @Override
     public String toString() {
-        return email + ", " + balance + ", " + typeOfBet + ", " + odds + ", " + driver + ", " + amountBet;
+        return email + ", " + chosenDriver + ", " + typeOfBet + ", " + betAmount + ", " + oddsOfBet;
     }
 
     public String getEmail() {
@@ -30,12 +29,12 @@ public class Bets {
         this.email = email;
     }
 
-    public int getBalance() {
-        return balance;
+    public String getChosenDriver() {
+        return chosenDriver;
     }
 
-    public void setBalance(int balance) {
-        this.balance = balance;
+    public void setChosenDriver(String chosenDriver) {
+        this.chosenDriver = chosenDriver;
     }
 
     public String getTypeOfBet() {
@@ -46,27 +45,19 @@ public class Bets {
         this.typeOfBet = typeOfBet;
     }
 
-    public int getOdds() {
-        return odds;
+    public int getBetAmount() {
+        return betAmount;
     }
 
-    public void setOdds(int odds) {
-        this.odds = odds;
+    public void setBetAmount(int betAmount) {
+        this.betAmount = betAmount;
     }
 
-    public String getDriver() {
-        return driver;
+    public double getOddsOfBet() {
+        return oddsOfBet;
     }
 
-    public void setDriver(String driver) {
-        this.driver = driver;
-    }
-
-    public int getAmountBet() {
-        return amountBet;
-    }
-
-    public void setAmountBet(int amountBet) {
-        this.amountBet = amountBet;
+    public void setOddsOfBet(double oddsOfBet) {
+        this.oddsOfBet = oddsOfBet;
     }
 }

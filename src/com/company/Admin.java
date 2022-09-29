@@ -13,6 +13,7 @@ public class Admin {
     public static int currentCircuit = 0;
 
     public static String getEmail(String email) {
+
         boolean valid = false;
         while (!valid) {
             email = Main.getInput("Please enter the email you would like to use for your account");
@@ -28,6 +29,7 @@ public class Admin {
 
 
     public static String getPassword(String password) {
+
         boolean valid = false;
         while (!valid) {
             password = Main.getInput("Please enter the password you would like to use");
@@ -62,6 +64,7 @@ public class Admin {
     }
 
     public static String showBalance(String email) {
+
         String balance = "";
         String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
 
@@ -85,6 +88,7 @@ public class Admin {
     }
 
     public static void displayMainMenu() {
+
         System.out.println("");
         System.out.println("A) Start next race in " + circuits[currentCircuit]);
         System.out.println("B) Simple explanation of Formula 1");
@@ -92,44 +96,65 @@ public class Admin {
         System.out.println("Q) Quit");
     }
 
-    public static void preQualifyingBets() {
+    public static void preQualifyingBets(String email, String password) {
+        double oddsOfBet = 0;
+        int betAmount = 0;
+        String chosenDriver = "";
+        boolean valid = false;
         displayBetMenu();
+        ArrayList<Integer> oddsArray = new ArrayList<>();
+        ArrayList<Double> finalOddsArray = new ArrayList<>();
+        double odds = 0;
         String ans = "";
         String typeOfBet = "";
-        while (!ans.equals("D")) {
+        while (!ans.equals("Q")) {
             ans = Main.getInput("Enter the letter of the option you would like to chose");
             if (ans.equals("A")) {
                 typeOfBet = "Pole Position";
                 for (int i = 0; i < 20; i++) {
                     String driver = drivers[i];
-                    int odds = getOdds(typeOfBet, driver);
+                    oddsArray = getOdds(typeOfBet, driver);
+                    odds = polePosition(oddsArray);
+                    finalOddsArray.add(odds);
+                    System.out.println(drivers[i] + ": " + odds);
                 }
+                while (!valid) {
+                    chosenDriver = Main.getInput("Which driver would you like to bet on? Alternatively type Q to quit ");
+                    for (int a = 0; a < drivers.length; a++) {
+                        if ((drivers[a].contains(chosenDriver)) || (chosenDriver.equals("Q"))) {
+                            valid = true;
+                        }
+                    }
+                }
+                betAmount = getBetAmount(email, password);
+                for (int i = 0; i < drivers.length; i++) {
+                    if (drivers[i].equals(chosenDriver)) {
+                        oddsOfBet = finalOddsArray.get(i);
+                    }
+                }
+                setBet(betAmount, chosenDriver, typeOfBet, email, oddsOfBet);
+                displayBetMenu();
             }
 
             if (ans.equals("B")) {
                 typeOfBet = "Race Winner";
                 for (int i = 0; i < 20; i++) {
                     String driver = drivers[i];
-                    int odds = getOdds(typeOfBet, driver);
+                    oddsArray = getOdds(typeOfBet, driver);
                 }
             }
             if (ans.equals("C")) {
                 typeOfBet = "Finish Race on Podium";
                 for (int i = 0; i < 20; i++) {
                     String driver = drivers[i];
-                    int odds = getOdds(typeOfBet, driver);
+                    oddsArray = getOdds(typeOfBet, driver);
                 }
             }
-
-                        // Need to show drivers and their odds
         }
     }
-                String chosenDriver = Main.getInput("Which driver would you like to bet on? ");
-                // Need to do validity check
-                int amountBet = Main.getIntInput("How much would you like to bet? ");
-                // Need to do validity check
 
     public static void displayBetMenu() {
+
         System.out.println("What would you like to bet on before qualifying?");
         System.out.println("");
         System.out.println("A) Pole Position");
@@ -138,8 +163,8 @@ public class Admin {
         System.out.println("D) Do Not Bet Simulate Qualifying");
     }
 
-    public static int getOdds(String typeOfBet, String driver) {
-        int odds = 0;
+    public static ArrayList<Integer> getOdds(String typeOfBet, String driver) {
+
         ArrayList<Integer> oddsArray = new ArrayList<>();
         String year = "2022";
         ArrayList<Integer> averageOfYears = new ArrayList<>();
@@ -161,13 +186,13 @@ public class Admin {
                         oddsArray.add(rs.getInt("Grid") - averageOfYears.get(0));
                     }
                 }
-                if ((rs.getString("GrandPrix")).equals(circuits[currentCircuit])) {
-                    for (int i = 0; i < 4; i++) {
+                if ((rs.getString("GrandPrix")).equals(circuits[currentCircuit]) && (rs.getInt("Year") != 2022) && (rs.getInt("Year") > 2015)) {
+                    for (int i = 0; i < 3; i++) {
                         oddsArray.add(rs.getInt("Grid") - averageOfYears.get(2022 - (rs.getInt("Year"))));
                     }
                 }
                 if ((rs.getInt("Year")) == 2022) {
-                    for (int i = 0; i < 3; i++) {
+                    for (int i = 0; i < 4; i++) {
                         oddsArray.add(rs.getInt("Grid") - averageOfYears.get(0));
                     }
                 }
@@ -177,6 +202,7 @@ public class Admin {
             System.out.println("Error in the SQL class: " + e);
         }
 
+        ArrayList<Integer> odds = new ArrayList<>();
         odds = fillOutOdds(oddsArray, averageOfYears);
 
         return odds;
@@ -201,9 +227,10 @@ public class Admin {
 
             ResultSet rs = stmt.executeQuery(sql);
 
-            while(rs.next()) {
-                for (int i = 0; i < (years.size()); i++){
-                    if ((rs.getInt("Year") == (years.get(i)))){
+            while (rs.next()) {
+                for (int i = 0; i < (years.size()); i++) {
+                    valid = false;
+                    if ((rs.getInt("Year") == (years.get(i)))) {
                         valid = true;
                     }
                 }
@@ -212,8 +239,19 @@ public class Admin {
                     valid = false;
                 }
             }
+        }
 
-            // Here down need to be in separate try catch
+        catch (Exception e) {
+            System.out.println("Error in the SQL class: " + e);
+        }
+
+        try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
+
+            Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+            String sql = "SELECT * FROM " + driver;
+
+            ResultSet rs = stmt.executeQuery(sql);
 
             for (int i = 0; i < (years.size()); i++) {
                 while (rs.next()) {
@@ -221,25 +259,26 @@ public class Admin {
                         averageArray.add(rs.getInt("Grid"));
                     }
                 }
-            }
-
-            for(int i = 0; i < (years.size()); i++){
                 for (int a = 0; a < averageArray.size(); a++) {
-                    average = average + averageArray.get(i);
+                    average = average + averageArray.get(a);
                 }
                 average = average / averageArray.size();
                 averageOfYears.add(average);
-             }
+                averageArray.clear();
+                rs.first();
+            }
         }
-    catch (Exception e) {
-        System.out.println("Error in the SQL class: " + e);
-    }
+
+        catch (Exception e) {
+            System.out.println("Error in the SQL class: " + e);
+        }
 
         return (averageOfYears);
     }
 
 
-    public static int fillOutOdds (ArrayList <Integer> oddsArray, ArrayList<Integer> averageOfYear) {
+    public static ArrayList<Integer> fillOutOdds (ArrayList <Integer> oddsArray, ArrayList<Integer> averageOfYear) {
+
         int odds = 0;
         int fill = 0;
         boolean valid = false;
@@ -259,8 +298,64 @@ public class Admin {
                 newOddsArray.add(i);
             }
         }
-        // Some error here
+
+        return newOddsArray;
+    }
+
+    public static double polePosition (ArrayList<Integer> oddsArray) {
+
+        double odds = 0;
+        double count = 0;
+        for (int i = 0; i < oddsArray.size(); i++) {
+            if ((oddsArray.get(i) == 1) || (oddsArray.get(i) == 2)) {
+                count = count + 1;
+            }
+        }
+        odds = count / oddsArray.size();
+        odds = odds * 100;
+        odds = Math.round(odds);
+        odds = odds / 100;
 
         return odds;
+    }
+
+    public static int getBetAmount (String email, String password) {
+        boolean valid = false;
+        int amountBet = 0;
+
+        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+
+        try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
+
+            Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+            String sql = "SELECT * FROM LogIn";
+
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while (rs.next()) {
+                if ((rs.getString("Email").equals(email)) && (rs.getString("Password").equals(password))) {
+                    while (!valid) {
+                        amountBet = Main.getIntInput("How much would you like to bet? ");
+                        if (rs.getInt("Balance") >= amountBet) {
+                            valid = true;
+                        }
+                        else {
+                            System.out.println("You only have " + rs.getString("Balance"));
+                        }
+                    }
+                }
+            }
+        }
+
+        catch (Exception e) {
+            System.out.println("Error in the SQL class: " + e);
+        }
+
+        return (amountBet);
+    }
+
+    public static void setBet (int betAmount, String chosenDriver, String typeOfBet, String email, double oddsOfBet) {
+
     }
 }

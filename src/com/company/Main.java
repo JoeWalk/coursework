@@ -37,7 +37,7 @@ public class Main {
         while (!ans.equals("Q")) {
             ans = getInput("Enter the letter of the option you would like to chose");
             if (ans.equals("A")) {
-                Admin.preQualifyingBets();
+                Admin.preQualifyingBets(email, password);
             }
         }
 
