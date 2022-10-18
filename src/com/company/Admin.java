@@ -172,7 +172,7 @@ public class Admin {
         ArrayList<Integer> oddsArray = new ArrayList<>();
         String year = "2022";
         ArrayList<Integer> averageOfYears = new ArrayList<>();
-        averageOfYears = getAverageOfYear(driver);
+        averageOfYears = getAverageOfYears(driver);
 
         String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
 
@@ -211,7 +211,7 @@ public class Admin {
         return odds;
     }
 
-    public static ArrayList<Integer> getAverageOfYear(String driver) {
+    public static ArrayList<Integer> getAverageOfYears(String driver) {
 
         ArrayList<Integer> averageOfYears = new ArrayList<>();
         ArrayList<Integer> averageArray = new ArrayList<>();
@@ -383,6 +383,14 @@ public class Admin {
     }
 
     public static void simulateQualifying() {
-        //Database is broken up to DR
+        int result = 0;
+        for (int i =0; i < drivers.length; i++) {
+            result = getQualifyingResults(drivers[i]);
+        }
+    }
+
+    public static int getQualifyingResults (String driver) {
+
+        return 0;
     }
 }
