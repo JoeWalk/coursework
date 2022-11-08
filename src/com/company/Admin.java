@@ -2,6 +2,7 @@ package com.company;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Admin {
 
@@ -185,19 +186,21 @@ public class Admin {
             ResultSet rs = stmt.executeQuery(sql);
 
             while (rs.next()) {
-                if ((rs.getInt("Year") == 2022) && (rs.getString("GrandPrix").equals(circuits[currentCircuit]))) {
-                    for (int i = 0; i < 5; i++) {
-                        oddsArray.add(rs.getInt("Grid") - averageOfYears.get(0));
+                if ((rs.getInt("Year") >= 2016)) {
+                    if ((rs.getInt("Year") == 2022) && (rs.getString("GrandPrix").equals(circuits[currentCircuit]))) {
+                        for (int i = 0; i < 10; i++) {
+                            oddsArray.add(rs.getInt("Grid") - averageOfYears.get(0));
+                        }
                     }
-                }
-                if ((rs.getString("GrandPrix")).equals(circuits[currentCircuit]) && (rs.getInt("Year") != 2022) && (rs.getInt("Year") > 2015)) {
-                    for (int i = 0; i < 3; i++) {
-                        oddsArray.add(rs.getInt("Grid") - averageOfYears.get(2022 - (rs.getInt("Year"))));
+                    if ((rs.getString("GrandPrix")).equals(circuits[currentCircuit]) && (rs.getInt("Year") != 2022) && (rs.getInt("Year") > 2015)) {
+                        for (int i = 0; i < 3; i++) {
+                            oddsArray.add(rs.getInt("Grid") - averageOfYears.get(2022 - (rs.getInt("Year"))));
+                        }
                     }
-                }
-                if ((rs.getInt("Year")) == 2022) {
-                    for (int i = 0; i < 4; i++) {
-                        oddsArray.add(rs.getInt("Grid") - averageOfYears.get(0));
+                    if ((rs.getInt("Year")) == 2022) {
+                        for (int i = 0; i < 4; i++) {
+                            oddsArray.add(rs.getInt("Grid") - averageOfYears.get(0));
+                        }
                     }
                 }
             }
@@ -383,14 +386,58 @@ public class Admin {
     }
 
     public static void simulateQualifying() {
-        int result = 0;
-        for (int i =0; i < drivers.length; i++) {
-            result = getQualifyingResults(drivers[i]);
+        ArrayList<Integer> startingGrid = new ArrayList<>();
+        for (int i = 0; i < drivers.length; i++) {
+            startingGrid.add(getQualifyingResults(drivers[i]));
         }
     }
 
     public static int getQualifyingResults (String driver) {
 
-        return 0;
+        ArrayList<Integer> qualiArray = new ArrayList<>();
+        ArrayList<Integer> averageOfYears = new ArrayList<>();
+        averageOfYears = getAverageOfYears(driver);
+
+        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+
+        try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
+
+            Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+            String sql = "SELECT * FROM " + driver;
+
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while (rs.next()) {
+                if ((rs.getInt("Year") >= 2016)) {
+                    if ((rs.getInt("Year") == 2022) && (rs.getString("GrandPrix").equals(circuits[currentCircuit]))) {
+                        for (int i = 0; i < 10; i++) {
+                            qualiArray.add(rs.getInt("Grid") - averageOfYears.get(0));
+                        }
+                    }
+                    if ((rs.getString("GrandPrix")).equals(circuits[currentCircuit]) && (rs.getInt("Year") != 2022) && (rs.getInt("Year") > 2015)) {
+                        for (int i = 0; i < 3; i++) {
+                            qualiArray.add(rs.getInt("Grid") - averageOfYears.get(2022 - (rs.getInt("Year"))));
+                        }
+                    }
+                    if ((rs.getInt("Year")) == 2022) {
+                        for (int i = 0; i < 4; i++) {
+                            qualiArray.add(rs.getInt("Grid") - averageOfYears.get(0));
+                        }
+                    }
+                }
+            }
+        }
+
+        catch (Exception e) {
+            System.out.println("Error in the SQL class: " + e);
+        }
+
+        //qualiArray = fillOutOdds(qualiArray, averageOfYears);
+        Random random = new Random();
+        int rand = random.nextInt(qualiArray.size());
+        rand = rand + averageOfYears.get(0);
+
+        return (qualiArray.get(rand));
     }
 }
