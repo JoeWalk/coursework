@@ -11,6 +11,7 @@ public class Admin {
             "SebastianVettel", "GuanyuZhou"};
     public static String[] circuits = {"Bahrain", "Saudi Arabia", "Australia", "Emilia-Romagna", "Miami", "Spain", "Monaco", "Azerbaijan", "Canada", "Britain", "Austria", "France", "Hungary",
             "Belgium", "Netherlands", "Italy", "Singapore", "Japan", "USA", "Mexico", "Sao Paulo", "Abu Dhabi"};
+
     public static int currentCircuit = 0;
     public static ArrayList<Bets> betList = new ArrayList<>();
 
@@ -193,12 +194,12 @@ public class Admin {
                         }
                     }
                     if ((rs.getString("GrandPrix")).equals(circuits[currentCircuit]) && (rs.getInt("Year") != 2022) && (rs.getInt("Year") > 2015)) {
-                        for (int i = 0; i < 3; i++) {
+                        for (int i = 0; i < 6; i++) {
                             oddsArray.add(rs.getInt("Grid") - averageOfYears.get(2022 - (rs.getInt("Year"))));
                         }
                     }
                     if ((rs.getInt("Year")) == 2022) {
-                        for (int i = 0; i < 4; i++) {
+                        for (int i = 0; i < 8; i++) {
                             oddsArray.add(rs.getInt("Grid") - averageOfYears.get(0));
                         }
                     }
@@ -386,9 +387,16 @@ public class Admin {
     }
 
     public static void simulateQualifying() {
-        ArrayList<Integer> startingGrid = new ArrayList<>();
+
+        //startingGrid need to be a 2D array so that the bubble sort can see what averages to find
+
+        int[] startingGrid = new int[20];
         for (int i = 0; i < drivers.length; i++) {
-            startingGrid.add(getQualifyingResults(drivers[i]));
+            startingGrid[i] = (getQualifyingResults(drivers[i]));
+        }
+        startingGrid = orderGrid(startingGrid);
+        for (int i = 0; i < startingGrid.length; i++) {
+            System.out.println(startingGrid[i]);
         }
     }
 
@@ -416,12 +424,12 @@ public class Admin {
                         }
                     }
                     if ((rs.getString("GrandPrix")).equals(circuits[currentCircuit]) && (rs.getInt("Year") != 2022) && (rs.getInt("Year") > 2015)) {
-                        for (int i = 0; i < 3; i++) {
+                        for (int i = 0; i < 6; i++) {
                             qualiArray.add(rs.getInt("Grid") - averageOfYears.get(2022 - (rs.getInt("Year"))));
                         }
                     }
                     if ((rs.getInt("Year")) == 2022) {
-                        for (int i = 0; i < 4; i++) {
+                        for (int i = 0; i < 8; i++) {
                             qualiArray.add(rs.getInt("Grid") - averageOfYears.get(0));
                         }
                     }
@@ -433,11 +441,29 @@ public class Admin {
             System.out.println("Error in the SQL class: " + e);
         }
 
-        //qualiArray = fillOutOdds(qualiArray, averageOfYears);
+        qualiArray = fillOutOdds(qualiArray, averageOfYears);
         Random random = new Random();
         int rand = random.nextInt(qualiArray.size());
-        rand = rand + averageOfYears.get(0);
 
         return (qualiArray.get(rand));
+    }
+
+    public static int[] orderGrid (int[] startingGrid) {
+
+        int temp = 0;
+        for (int i = 0; i < 21; i++) {
+            for (int a = 1; a < 20; a++) {
+                if (startingGrid[a-1] > startingGrid[a]) {
+
+                }
+                if(startingGrid[a-1] > startingGrid[a]) {
+                    temp = startingGrid[a-1];
+                    startingGrid[a-1] = startingGrid[a];
+                    startingGrid[a] = temp;
+
+                }
+            }
+        }
+        return (startingGrid);
     }
 }
