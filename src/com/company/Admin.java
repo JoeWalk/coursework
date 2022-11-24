@@ -390,13 +390,13 @@ public class Admin {
 
         //startingGrid need to be a 2D array so that the bubble sort can see what averages to find
 
-        int[] startingGrid = new int[20];
+        int[][] startingGrid = {{0,0}, {1,0}, {2,0},{3,0},{4,0},{5,0},{6,0},{7,0},{8,0},{9,0},{10,0},{11,0},{12,0},{13,0},{14,0},{15,0},{16,0},{17,0},{18,0},{19,0}};
         for (int i = 0; i < drivers.length; i++) {
-            startingGrid[i] = (getQualifyingResults(drivers[i]));
+            startingGrid[i][1] = (getQualifyingResults(drivers[i]));
         }
         startingGrid = orderGrid(startingGrid);
         for (int i = 0; i < startingGrid.length; i++) {
-            System.out.println(startingGrid[i]);
+            System.out.println(startingGrid[i][1]);
         }
     }
 
@@ -448,21 +448,46 @@ public class Admin {
         return (qualiArray.get(rand));
     }
 
-    public static int[] orderGrid (int[] startingGrid) {
-
+    public static int[][] orderGrid (int[][] startingGrid) {
+        ArrayList<Integer> tempList = new ArrayList<>();
         int temp = 0;
         for (int i = 0; i < 21; i++) {
             for (int a = 1; a < 20; a++) {
-                if (startingGrid[a-1] > startingGrid[a]) {
-
-                }
-                if(startingGrid[a-1] > startingGrid[a]) {
-                    temp = startingGrid[a-1];
-                    startingGrid[a-1] = startingGrid[a];
-                    startingGrid[a] = temp;
+                if(startingGrid[a-1][1] > startingGrid[a][1]) {
+                    temp = startingGrid[a-1][1];
+                    startingGrid[a-1][1] = startingGrid[a][1];
+                    startingGrid[a][1] = temp;
+                    temp = startingGrid[a-1][0];
+                    startingGrid[a-1][0] = startingGrid[a][0];
+                    startingGrid[a][0] = temp;
 
                 }
             }
+        }
+
+        for (int i = 0; i < 21; i++) {
+            for (int a = 1; a < 20; a++) {
+                if (startingGrid[a-1][1] == i){
+                    tempList.add(startingGrid[a-1][1]);
+                }
+            }
+            for (int b = 0; b < tempList.size() + 1; b++) {
+                for (int a = 1; a < tempList.size(); a++) {
+                    if(tempList.get(a-1) > tempList.get(a)) {
+                        temp = tempList.get(a-1);
+                        tempList.set(a-1, tempList.get(a));
+                        tempList.set(a, temp);
+                    }
+                }
+            }
+            for (int c = 0; c < 20; c++) {
+                if (startingGrid[c][1] == i) {
+                    for (int d = 0; d < tempList.size(); d++) {
+                        startingGrid[c+d][1] = tempList.get(d);
+                    }
+                }
+            }
+            tempList.clear();
         }
         return (startingGrid);
     }
