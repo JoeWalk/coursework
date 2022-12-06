@@ -449,7 +449,8 @@ public class Admin {
     }
 
     public static int[][] orderGrid (int[][] startingGrid) {
-        ArrayList<Integer> tempList = new ArrayList<>();
+        ArrayList<Integer> tempListDrivers = new ArrayList<>();
+        ArrayList<Integer> tempListGrid = new ArrayList<>();
         int temp = 0;
         for (int i = 0; i < 21; i++) {
             for (int a = 1; a < 20; a++) {
@@ -466,29 +467,41 @@ public class Admin {
         }
 
         for (int i = 0; i < 21; i++) {
-            for (int a = 1; a < 20; a++) {
-                if (startingGrid[a-1][1] == i){
-                    tempList.add(startingGrid[a-1][1]);
+            for (int a = 0; a < 20; a++) {
+                if (startingGrid[a][1] == i){
+                    tempListDrivers.add(startingGrid[a][0]);
+                    tempListGrid.add(startingGrid[a][1]);
                 }
             }
-            for (int b = 0; b < tempList.size() + 1; b++) {
-                for (int a = 1; a < tempList.size(); a++) {
-                    if(tempList.get(a-1) > tempList.get(a)) {
-                        temp = tempList.get(a-1);
-                        tempList.set(a-1, tempList.get(a));
-                        tempList.set(a, temp);
-                    }
-                }
-            }
+            tempListGrid = orderTempLists(tempListGrid, tempListDrivers);
             for (int c = 0; c < 20; c++) {
                 if (startingGrid[c][1] == i) {
-                    for (int d = 0; d < tempList.size(); d++) {
-                        startingGrid[c+d][1] = tempList.get(d);
+                    for (int d = 0; d < tempListGrid.size() - 1; d++) {
+                        startingGrid[c+d-1][1] = tempListGrid.get(d);
                     }
                 }
             }
-            tempList.clear();
+            tempListDrivers.clear();
+            tempListGrid.clear();
         }
         return (startingGrid);
+    }
+
+    public static ArrayList<Integer> orderTempLists (ArrayList<Integer> tempListGrid, ArrayList<Integer> tempListDrivers) {
+        int temp;
+        ArrayList<Integer> temp1 = new ArrayList<>();
+        ArrayList<Integer> temp2 = new ArrayList<>();
+        for (int i = 0; i < tempListGrid.size(); i++) {
+            for (int a = 0; a < tempListGrid.size() - 1; i++) {
+                temp1 = getAverageOfYears(drivers[tempListDrivers.get(a)]);
+                temp2 = getAverageOfYears(drivers[tempListDrivers.get(a)]);
+                if (temp2.get(0) < temp1.get(0)){
+                    temp = tempListGrid.get(a) + 1;
+                    tempListGrid.set(a,tempListGrid.get(a+1));
+                    tempListGrid.set(a+1,temp);
+                }
+            }
+        }
+        return tempListGrid;
     }
 }
