@@ -389,12 +389,31 @@ public class Admin {
     public static void simulateQualifying() {
 
         //startingGrid need to be a 2D array so that the bubble sort can see what averages to find
-
+        Random rand = new Random ();
+        String driver = "";
+        boolean valid = false;
+        int random = 0;
+        int count = 0;
         int[][] startingGrid = {{0,0}, {1,0}, {2,0},{3,0},{4,0},{5,0},{6,0},{7,0},{8,0},{9,0},{10,0},{11,0},{12,0},{13,0},{14,0},{15,0},{16,0},{17,0},{18,0},{19,0}};
-        for (int i = 0; i < drivers.length; i++) {
-            startingGrid[i][1] = (getQualifyingResults(drivers[i]));
+        ArrayList<Integer> driversToGo = new ArrayList<>();
+        for (int i = 0; i < 20; i++){
+            driversToGo.add(i);
         }
-        startingGrid = orderGrid(startingGrid);
+        for (int i = 0; i < 20; i++){
+            random = rand.nextInt(20);
+            for (int a = 0; a < driversToGo.size(); a++){
+                if (driversToGo.get(a) == random){
+                    valid = true;
+                }
+            }
+            if (valid == true){
+                startingGrid[count][1] = (getQualifyingResults(drivers[random]));
+                count = count + 1;
+            }
+            valid = false;
+            driversToGo.remove(random);
+        }
+
         for (int i = 0; i < startingGrid.length; i++) {
             System.out.println(startingGrid[i][1]);
         }
@@ -404,6 +423,9 @@ public class Admin {
 
         ArrayList<Integer> qualiArray = new ArrayList<>();
         ArrayList<Integer> averageOfYears = new ArrayList<>();
+        boolean valid = false;
+        int finalGridPlace = 0;
+        int [] openPlaces = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
         averageOfYears = getAverageOfYears(driver);
 
         String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
@@ -441,11 +463,45 @@ public class Admin {
             System.out.println("Error in the SQL class: " + e);
         }
 
-        qualiArray = fillOutOdds(qualiArray, averageOfYears);
+        qualiArray = fillOutGrid(qualiArray, averageOfYears);
         Random random = new Random();
         int rand = random.nextInt(qualiArray.size());
+        finalGridPlace = qualiArray.get(rand);
+        for (int a = 0; a < openPlaces.length; a++){
+            if (openPlaces[a] == finalGridPlace){
+                valid = true;
+            }
+        }
+        if (valid == true){
+            //Need to check if finalGridPlace is in openPlaces and remove that place from openPlaces if it is
+        }
+        valid = false;
 
-        return (qualiArray.get(rand));
+        return (finalGridPlace);
+    }
+
+    public static ArrayList<Integer> fillOutGrid (ArrayList<Integer> qualiArray, ArrayList<Integer> averageOfYear){
+        int odds = 0;
+        int fill = 0;
+        boolean valid = false;
+        ArrayList<Integer> newQualiArray = new ArrayList<>();
+        for (int length = 0; length < qualiArray.size(); length++) {
+            fill = qualiArray.get(length) + averageOfYear.get(0);
+            newQualiArray.add(fill);
+        }
+        for (int i = 1; i < 21; i++) {
+            valid = false;
+            for (int length = 0; length < newQualiArray.size(); length++) {
+                if (newQualiArray.get(length) == i) {
+                    valid = true;
+                }
+            }
+            if (valid == false) {
+                newQualiArray.add(i);
+            }
+        }
+
+        return newQualiArray;
     }
 
     public static int[][] orderGrid (int[][] startingGrid) {
@@ -491,14 +547,16 @@ public class Admin {
         int temp;
         ArrayList<Integer> temp1 = new ArrayList<>();
         ArrayList<Integer> temp2 = new ArrayList<>();
-        for (int i = 0; i < tempListGrid.size(); i++) {
-            for (int a = 0; a < tempListGrid.size() - 1; i++) {
-                temp1 = getAverageOfYears(drivers[tempListDrivers.get(a)]);
-                temp2 = getAverageOfYears(drivers[tempListDrivers.get(a)]);
-                if (temp2.get(0) < temp1.get(0)){
-                    temp = tempListGrid.get(a) + 1;
-                    tempListGrid.set(a,tempListGrid.get(a+1));
-                    tempListGrid.set(a+1,temp);
+        if (tempListGrid.size() > 1){
+            for (int i = 0; i < tempListGrid.size(); i++) {
+                for (int a = 0; a < tempListGrid.size() - 1; i++) {
+                    temp1 = getAverageOfYears(drivers[tempListDrivers.get(a)]);
+                    temp2 = getAverageOfYears(drivers[tempListDrivers.get(a+1)]);
+                    if (temp2.get(0) < temp1.get(0)){
+                        temp = tempListGrid.get(a) + 1;
+                        tempListGrid.set(a,tempListGrid.get(a+1));
+                        tempListGrid.set(a+1,temp);
+                    }
                 }
             }
         }
