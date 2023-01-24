@@ -388,44 +388,45 @@ public class Admin {
 
     public static void simulateQualifying() {
 
-        //startingGrid need to be a 2D array so that the bubble sort can see what averages to find
         Random rand = new Random ();
+        ArrayList<Integer> openPlaces = new ArrayList<>();
+        for (int i = 1; i < 21; i++) {
+            openPlaces.add(i);
+        }
         String driver = "";
         boolean valid = false;
         int random = 0;
-        int count = 0;
-        int[][] startingGrid = {{0,0}, {1,0}, {2,0},{3,0},{4,0},{5,0},{6,0},{7,0},{8,0},{9,0},{10,0},{11,0},{12,0},{13,0},{14,0},{15,0},{16,0},{17,0},{18,0},{19,0}};
+        int [][] startingGrid = {{0,0}, {1,0}, {2,0},{3,0},{4,0},{5,0},{6,0},{7,0},{8,0},{9,0},{10,0},{11,0},{12,0},{13,0},{14,0},{15,0},{16,0},{17,0},{18,0},{19,0}};
         ArrayList<Integer> driversToGo = new ArrayList<>();
         for (int i = 0; i < 20; i++){
             driversToGo.add(i);
         }
-        for (int i = 0; i < 20; i++){
-            random = rand.nextInt(20);
+        while(driversToGo.size() > 0){
+            random = driversToGo.get(rand.nextInt(driversToGo.size()));
             for (int a = 0; a < driversToGo.size(); a++){
                 if (driversToGo.get(a) == random){
+                    driversToGo.remove(a);
                     valid = true;
                 }
             }
             if (valid == true){
-                startingGrid[count][1] = (getQualifyingResults(drivers[random]));
-                count = count + 1;
+                startingGrid[random][1] = (getQualifyingResults(drivers[random], openPlaces));
+                System.out.println((drivers[random] + startingGrid[random][1]));
             }
             valid = false;
-            driversToGo.remove(random);
         }
-
         for (int i = 0; i < startingGrid.length; i++) {
             System.out.println(startingGrid[i][1]);
         }
     }
 
-    public static int getQualifyingResults (String driver) {
+    public static int getQualifyingResults (String driver, ArrayList<Integer> openPlaces) {
 
         ArrayList<Integer> qualiArray = new ArrayList<>();
         ArrayList<Integer> averageOfYears = new ArrayList<>();
         boolean valid = false;
         int finalGridPlace = 0;
-        int [] openPlaces = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20};
+        int rand = 0;
         averageOfYears = getAverageOfYears(driver);
 
         String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
@@ -465,18 +466,20 @@ public class Admin {
 
         qualiArray = fillOutGrid(qualiArray, averageOfYears);
         Random random = new Random();
-        int rand = random.nextInt(qualiArray.size());
-        finalGridPlace = qualiArray.get(rand);
-        for (int a = 0; a < openPlaces.length; a++){
-            if (openPlaces[a] == finalGridPlace){
-                valid = true;
+        while (valid == false){
+            rand = random.nextInt(qualiArray.size());
+            finalGridPlace = qualiArray.get(rand);
+            for (int a = 0; a < openPlaces.size(); a++){
+                if (openPlaces.get(a) == finalGridPlace){
+                    openPlaces.remove(a);
+                    valid = true;
+                    return (finalGridPlace);
+                }
             }
         }
-        if (valid == true){
-            //Need to check if finalGridPlace is in openPlaces and remove that place from openPlaces if it is
-        }
-        valid = false;
-
+        // Is looping here somewhere when there is not many places left.
+        // Making it do the method again prints an error because of the check so find another way.
+        // fillOutGrid may not be working as it should
         return (finalGridPlace);
     }
 
@@ -485,6 +488,7 @@ public class Admin {
         int fill = 0;
         boolean valid = false;
         ArrayList<Integer> newQualiArray = new ArrayList<>();
+        ArrayList<Integer> finalQualiArray = new ArrayList<>();
         for (int length = 0; length < qualiArray.size(); length++) {
             fill = qualiArray.get(length) + averageOfYear.get(0);
             newQualiArray.add(fill);
@@ -497,7 +501,7 @@ public class Admin {
                 }
             }
             if (valid == false) {
-                newQualiArray.add(i);
+                finalQualiArray.add(i);
             }
         }
 
