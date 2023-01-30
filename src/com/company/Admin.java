@@ -411,13 +411,17 @@ public class Admin {
             }
             if (valid == true){
                 startingGrid[random][1] = (getQualifyingResults(drivers[random], openPlaces));
-                System.out.println((drivers[random] + startingGrid[random][1]));
             }
             valid = false;
         }
+        orderGrid(startingGrid);
         for (int i = 0; i < startingGrid.length; i++) {
-            System.out.println(startingGrid[i][1]);
+            System.out.println(drivers[startingGrid[i][0]] + " - " + startingGrid[i][1]);
         }
+
+        // payback on pole position bets
+        // move onto simulating race from here
+
     }
 
     public static int getQualifyingResults (String driver, ArrayList<Integer> openPlaces) {
@@ -477,9 +481,6 @@ public class Admin {
                 }
             }
         }
-        // Is looping here somewhere when there is not many places left.
-        // Making it do the method again prints an error because of the check so find another way.
-        // fillOutGrid may not be working as it should
         return (finalGridPlace);
     }
 
@@ -519,8 +520,6 @@ public class Admin {
     }
 
     public static int[][] orderGrid (int[][] startingGrid) {
-        ArrayList<Integer> tempListDrivers = new ArrayList<>();
-        ArrayList<Integer> tempListGrid = new ArrayList<>();
         int temp = 0;
         for (int i = 0; i < 21; i++) {
             for (int a = 1; a < 20; a++) {
@@ -536,44 +535,6 @@ public class Admin {
             }
         }
 
-        for (int i = 0; i < 21; i++) {
-            for (int a = 0; a < 20; a++) {
-                if (startingGrid[a][1] == i){
-                    tempListDrivers.add(startingGrid[a][0]);
-                    tempListGrid.add(startingGrid[a][1]);
-                }
-            }
-            tempListGrid = orderTempLists(tempListGrid, tempListDrivers);
-            for (int c = 0; c < 20; c++) {
-                if (startingGrid[c][1] == i) {
-                    for (int d = 0; d < tempListGrid.size() - 1; d++) {
-                        startingGrid[c+d-1][1] = tempListGrid.get(d);
-                    }
-                }
-            }
-            tempListDrivers.clear();
-            tempListGrid.clear();
-        }
         return (startingGrid);
-    }
-
-    public static ArrayList<Integer> orderTempLists (ArrayList<Integer> tempListGrid, ArrayList<Integer> tempListDrivers) {
-        int temp;
-        ArrayList<Integer> temp1 = new ArrayList<>();
-        ArrayList<Integer> temp2 = new ArrayList<>();
-        if (tempListGrid.size() > 1){
-            for (int i = 0; i < tempListGrid.size(); i++) {
-                for (int a = 0; a < tempListGrid.size() - 1; i++) {
-                    temp1 = getAverageOfYears(drivers[tempListDrivers.get(a)]);
-                    temp2 = getAverageOfYears(drivers[tempListDrivers.get(a+1)]);
-                    if (temp2.get(0) < temp1.get(0)){
-                        temp = tempListGrid.get(a) + 1;
-                        tempListGrid.set(a,tempListGrid.get(a+1));
-                        tempListGrid.set(a+1,temp);
-                    }
-                }
-            }
-        }
-        return tempListGrid;
     }
 }
