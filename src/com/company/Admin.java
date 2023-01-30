@@ -464,7 +464,7 @@ public class Admin {
             System.out.println("Error in the SQL class: " + e);
         }
 
-        qualiArray = fillOutGrid(qualiArray, averageOfYears);
+        qualiArray = fillOutGrid(qualiArray, averageOfYears, openPlaces);
         Random random = new Random();
         while (valid == false){
             rand = random.nextInt(qualiArray.size());
@@ -483,25 +483,35 @@ public class Admin {
         return (finalGridPlace);
     }
 
-    public static ArrayList<Integer> fillOutGrid (ArrayList<Integer> qualiArray, ArrayList<Integer> averageOfYear){
+    public static ArrayList<Integer> fillOutGrid (ArrayList<Integer> qualiArray, ArrayList<Integer> averageOfYear, ArrayList<Integer> openPlaces){
         int odds = 0;
         int fill = 0;
-        boolean valid = false;
+        boolean valid1 = false;
+        boolean valid2 = false;
         ArrayList<Integer> newQualiArray = new ArrayList<>();
-        ArrayList<Integer> finalQualiArray = new ArrayList<>();
         for (int length = 0; length < qualiArray.size(); length++) {
             fill = qualiArray.get(length) + averageOfYear.get(0);
-            newQualiArray.add(fill);
-        }
-        for (int i = 1; i < 21; i++) {
-            valid = false;
-            for (int length = 0; length < newQualiArray.size(); length++) {
-                if (newQualiArray.get(length) == i) {
-                    valid = true;
+            for (int i = 0; i < openPlaces.size(); i++) {
+                if (fill == openPlaces.get(i)) {
+                    newQualiArray.add(fill);
                 }
             }
-            if (valid == false) {
-                finalQualiArray.add(i);
+        }
+        for (int i = 1; i < 21; i++) {
+            valid1 = false;
+            valid2 = false;
+            for (int length = 0; length < newQualiArray.size(); length++) {
+                if (newQualiArray.get(length) == i) {
+                    valid1 = true;
+                }
+            }
+            for (int a = 0; a < openPlaces.size(); a++) {
+                if (openPlaces.get(a) == i) {
+                    valid2 = true;
+                }
+            }
+            if ((valid1 == false) && (valid2 == true)) {
+                newQualiArray.add(i);
             }
         }
 
