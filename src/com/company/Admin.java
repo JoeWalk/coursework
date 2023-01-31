@@ -156,7 +156,7 @@ public class Admin {
                 }
             }
         }
-        simulateQualifying();
+        simulateQualifying(email, password);
     }
 
     public static void displayBetMenu() {
@@ -164,13 +164,27 @@ public class Admin {
         System.out.println("What would you like to bet on before qualifying?");
         System.out.println("");
         System.out.println("A) Pole Position");
-        System.out.println("B) Race Winner");
-        System.out.println("C) Finish Race on Podium");
+        System.out.println("Q) Do Not Bet, Simulate Qualifying");
+    }
+
+    public static void displayRaceBetMenu() {
+
+        System.out.println("What would you like to bet on before the race?");
+        System.out.println("");
+        System.out.println("A) Race Winner");
+        System.out.println("B) Finish Race on Podium");
         System.out.println("Q) Do Not Bet, Simulate Qualifying");
     }
 
     public static ArrayList<Integer> getOdds(String typeOfBet, String driver) {
 
+        String dataToGet = "";
+        if(typeOfBet.equals("Pole Position")) {
+            dataToGet = "Grid";
+        }
+        else {
+            dataToGet = "Race";
+        }
         ArrayList<Integer> oddsArray = new ArrayList<>();
         String year = "2022";
         ArrayList<Integer> averageOfYears = new ArrayList<>();
@@ -182,7 +196,7 @@ public class Admin {
 
             Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 
-            String sql = "SELECT Year, GrandPrix, Grid FROM " + driver;
+            String sql = "SELECT Year, GrandPrix, Grid, Race FROM " + driver;
 
             ResultSet rs = stmt.executeQuery(sql);
 
@@ -190,17 +204,17 @@ public class Admin {
                 if ((rs.getInt("Year") >= 2016)) {
                     if ((rs.getInt("Year") == 2022) && (rs.getString("GrandPrix").equals(circuits[currentCircuit]))) {
                         for (int i = 0; i < 10; i++) {
-                            oddsArray.add(rs.getInt("Grid") - averageOfYears.get(0));
+                            oddsArray.add(rs.getInt(dataToGet) - averageOfYears.get(0));
                         }
                     }
                     if ((rs.getString("GrandPrix")).equals(circuits[currentCircuit]) && (rs.getInt("Year") != 2022) && (rs.getInt("Year") > 2015)) {
                         for (int i = 0; i < 6; i++) {
-                            oddsArray.add(rs.getInt("Grid") - averageOfYears.get(2022 - (rs.getInt("Year"))));
+                            oddsArray.add(rs.getInt(dataToGet) - averageOfYears.get(2022 - (rs.getInt("Year"))));
                         }
                     }
                     if ((rs.getInt("Year")) == 2022) {
                         for (int i = 0; i < 8; i++) {
-                            oddsArray.add(rs.getInt("Grid") - averageOfYears.get(0));
+                            oddsArray.add(rs.getInt(dataToGet) - averageOfYears.get(0));
                         }
                     }
                 }
@@ -382,7 +396,7 @@ public class Admin {
         betList.add(bet);
     }
 
-    public static void simulateQualifying() {
+    public static void simulateQualifying(String email, String password) {
 
         Random rand = new Random();
         ArrayList<Integer> openPlaces = new ArrayList<>();
@@ -415,9 +429,12 @@ public class Admin {
             System.out.println(drivers[startingGrid[i][0]] + " - " + startingGrid[i][1]);
         }
 
+        System.out.println("");
+
         paybackQualiBets(startingGrid);
 
-        // payback on pole position bets
+        raceBets(email, password);
+
         // move onto simulating race from here
 
     }
@@ -544,64 +561,129 @@ public class Admin {
         int oddsForEquation = 0;
         String chosenDriver = "";
         int temp = 0;
-        Bets placeholder = betList.get(0);
-        for (int i = 0; i < betList.size(); i++) {
-            placeholder = betList.get(i);
-            email = placeholder.getEmail();
-            chosenDriver = placeholder.getChosenDriver();
-            amountBet = placeholder.getBetAmount();
-            odds = placeholder.getOddsOfBet();
-            odds = odds * 100;
-            oddsForEquation = (int)Math.round(odds);
-            if (chosenDriver.equals(poleWinner)) {
+        if (betList.size() != 0) {
+            for (int i = 0; i < betList.size(); i++) {
+                Bets placeholder = betList.get(i);
+                email = placeholder.getEmail();
+                chosenDriver = placeholder.getChosenDriver();
+                amountBet = placeholder.getBetAmount();
+                odds = placeholder.getOddsOfBet();
+                odds = odds * 100;
+                oddsForEquation = (int)Math.round(odds);
+                if (chosenDriver.equals(poleWinner)) {
 
-                // Finds users current balance to find new balance
+                    // Finds users current balance to find new balance
 
-                try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
+                    try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
 
-                    Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                        Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 
-                    String sql = "SELECT * FROM LogIn";
+                        String sql = "SELECT * FROM LogIn";
 
-                    ResultSet rs = stmt.executeQuery(sql);
+                        ResultSet rs = stmt.executeQuery(sql);
 
-                    while (rs.next()) {
-                        if (email.equals(rs.getString("email"))) {
-                            currentBalance = rs.getInt("Balance");
-                            temp = currentBalance + (((amountBet*100) / oddsForEquation)*2);
-                            currentBalance = temp;
+                        while (rs.next()) {
+                            if (email.equals(rs.getString("email"))) {
+                                currentBalance = rs.getInt("Balance");
+                                temp = currentBalance + (((amountBet*100) / oddsForEquation)*2);
+                                currentBalance = temp;
+                            }
+                        }
+                    }
+                    catch (Exception e) {
+                        System.out.println("Error in the SQL class: " + e);
+                    }
+
+                    // updates database with new balance
+
+                    try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
+
+                        Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+                        String sql = "UPDATE LogIn SET Balance = ? WHERE Email = ?";
+
+                        PreparedStatement preparedStatement = con.prepareStatement(sql);
+                        preparedStatement.setInt(1, currentBalance);
+                        preparedStatement.setString(2, email);
+
+                        int row = preparedStatement.executeUpdate();
+
+                    } catch (Exception e) {
+                        System.out.println("Error in the SQL class: " + e);
+                    }
+
+                    System.out.println("Congratulations! You won your bet on " + placeholder.getChosenDriver() + " for Pole Position.\nYou won £" + (currentBalance - temp) + "\nYour balance is now £" + currentBalance);
+
+                }
+
+                else {
+                    System.out.println("You did not win your bet on " + placeholder.getChosenDriver() + " for Pole Position. Better luck next time.");
+                }
+            }
+        }
+    }
+
+    public static void raceBets (String email, String password) {
+
+        double oddsOfBet = 0;
+        int betAmount = 0;
+        String chosenDriver = "";
+        boolean valid = false;
+        displayRaceBetMenu();
+        ArrayList<Integer> oddsArray = new ArrayList<>();
+        ArrayList<Double> finalOddsArray = new ArrayList<>();
+        double odds = 0;
+        String ans = "";
+        String typeOfBet = "";
+        while (!ans.equals("Q")) {
+            ans = Main.getInput("Enter the letter of the option you would like to chose");
+            if (ans.equals("A")) {
+                typeOfBet = "Race Winner";
+                for (int i = 0; i < 20; i++) {
+                    String driver = drivers[i];
+                    oddsArray = getOdds(typeOfBet, driver);
+                    odds = raceWinner(oddsArray);
+                    finalOddsArray.add(odds);
+                    System.out.println(drivers[i] + ": " + odds);
+                }
+                while (!valid) {
+                    chosenDriver = Main.getInput("Which driver would you like to bet on? Alternatively type Q to quit ");
+                    for (int a = 0; a < drivers.length; a++) {
+                        if ((drivers[a].contains(chosenDriver)) || (chosenDriver.equals("Q"))) {
+                            valid = true;
                         }
                     }
                 }
-                catch (Exception e) {
-                    System.out.println("Error in the SQL class: " + e);
+                valid = false;
+
+                betAmount = getBetAmount(email, password);
+                for (int i = 0; i < drivers.length; i++) {
+                    if (drivers[i].equals(chosenDriver)) {
+                        oddsOfBet = finalOddsArray.get(i);
+                    }
                 }
-
-                // updates database with new balance
-
-                try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
-
-                    Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-
-                    String sql = "UPDATE LogIn SET Balance = ? WHERE Email = ?";
-
-                    PreparedStatement preparedStatement = con.prepareStatement(sql);
-                    preparedStatement.setInt(1, currentBalance);
-                    preparedStatement.setString(2, email);
-
-                    int row = preparedStatement.executeUpdate();
-
-                } catch (Exception e) {
-                    System.out.println("Error in the SQL class: " + e);
-                }
-
-                System.out.println("Congratulations! You won your bet on " + placeholder.getChosenDriver() + " for Pole Position.\nYou won £" + (currentBalance - temp) + "\nYour balance is now £" + currentBalance);
-
+                setBet(betAmount, chosenDriver, typeOfBet, email, oddsOfBet);
+                displayRaceBetMenu();
             }
 
-            else {
-                System.out.println("You did not win your bet on " + placeholder.getChosenDriver() + " for Pole Position. Better luck next time.");
+         }
+
+    }
+
+    public static double raceWinner (ArrayList<Integer> oddsArray) {
+
+        double odds = 0;
+        double count = 0;
+        for (int i = 0; i < oddsArray.size(); i++) {
+            if (oddsArray.get(i) == 1) {
+                count = count + 1;
             }
         }
+        odds = count / oddsArray.size();
+        odds = odds * 100;
+        odds = Math.round(odds);
+        odds = odds / 100;
+
+        return odds;
     }
 }
