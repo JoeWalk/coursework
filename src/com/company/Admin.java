@@ -353,9 +353,7 @@ public class Admin {
                     }
                 }
             }
-        }
-
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("Error in the SQL class: " + e);
         }
 
@@ -371,16 +369,14 @@ public class Admin {
 
             int row = preparedStatement.executeUpdate();
 
-        }
-
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("Error in the SQL class: " + e);
         }
 
-        return(amountBet);
+        return (amountBet);
     }
 
-    public static void setBet (int betAmount, String chosenDriver, String typeOfBet, String email, double oddsOfBet) {
+    public static void setBet(int betAmount, String chosenDriver, String typeOfBet, String email, double oddsOfBet) {
         Bets bet = new Bets(email, chosenDriver, typeOfBet, betAmount, oddsOfBet);
         System.out.println(bet.toString());
         betList.add(bet);
@@ -388,7 +384,7 @@ public class Admin {
 
     public static void simulateQualifying() {
 
-        Random rand = new Random ();
+        Random rand = new Random();
         ArrayList<Integer> openPlaces = new ArrayList<>();
         for (int i = 1; i < 21; i++) {
             openPlaces.add(i);
@@ -396,20 +392,20 @@ public class Admin {
         String driver = "";
         boolean valid = false;
         int random = 0;
-        int [][] startingGrid = {{0,0}, {1,0}, {2,0},{3,0},{4,0},{5,0},{6,0},{7,0},{8,0},{9,0},{10,0},{11,0},{12,0},{13,0},{14,0},{15,0},{16,0},{17,0},{18,0},{19,0}};
+        int[][] startingGrid = {{0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}, {9, 0}, {10, 0}, {11, 0}, {12, 0}, {13, 0}, {14, 0}, {15, 0}, {16, 0}, {17, 0}, {18, 0}, {19, 0}};
         ArrayList<Integer> driversToGo = new ArrayList<>();
-        for (int i = 0; i < 20; i++){
+        for (int i = 0; i < 20; i++) {
             driversToGo.add(i);
         }
-        while(driversToGo.size() > 0){
+        while (driversToGo.size() > 0) {
             random = driversToGo.get(rand.nextInt(driversToGo.size()));
-            for (int a = 0; a < driversToGo.size(); a++){
-                if (driversToGo.get(a) == random){
+            for (int a = 0; a < driversToGo.size(); a++) {
+                if (driversToGo.get(a) == random) {
                     driversToGo.remove(a);
                     valid = true;
                 }
             }
-            if (valid == true){
+            if (valid == true) {
                 startingGrid[random][1] = (getQualifyingResults(drivers[random], openPlaces));
             }
             valid = false;
@@ -419,12 +415,14 @@ public class Admin {
             System.out.println(drivers[startingGrid[i][0]] + " - " + startingGrid[i][1]);
         }
 
+        paybackQualiBets(startingGrid);
+
         // payback on pole position bets
         // move onto simulating race from here
 
     }
 
-    public static int getQualifyingResults (String driver, ArrayList<Integer> openPlaces) {
+    public static int getQualifyingResults(String driver, ArrayList<Integer> openPlaces) {
 
         ArrayList<Integer> qualiArray = new ArrayList<>();
         ArrayList<Integer> averageOfYears = new ArrayList<>();
@@ -462,19 +460,17 @@ public class Admin {
                     }
                 }
             }
-        }
-
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("Error in the SQL class: " + e);
         }
 
         qualiArray = fillOutGrid(qualiArray, averageOfYears, openPlaces);
         Random random = new Random();
-        while (valid == false){
+        while (valid == false) {
             rand = random.nextInt(qualiArray.size());
             finalGridPlace = qualiArray.get(rand);
-            for (int a = 0; a < openPlaces.size(); a++){
-                if (openPlaces.get(a) == finalGridPlace){
+            for (int a = 0; a < openPlaces.size(); a++) {
+                if (openPlaces.get(a) == finalGridPlace) {
                     openPlaces.remove(a);
                     valid = true;
                     return (finalGridPlace);
@@ -484,7 +480,7 @@ public class Admin {
         return (finalGridPlace);
     }
 
-    public static ArrayList<Integer> fillOutGrid (ArrayList<Integer> qualiArray, ArrayList<Integer> averageOfYear, ArrayList<Integer> openPlaces){
+    public static ArrayList<Integer> fillOutGrid(ArrayList<Integer> qualiArray, ArrayList<Integer> averageOfYear, ArrayList<Integer> openPlaces) {
         int odds = 0;
         int fill = 0;
         boolean valid1 = false;
@@ -519,16 +515,16 @@ public class Admin {
         return newQualiArray;
     }
 
-    public static int[][] orderGrid (int[][] startingGrid) {
+    public static int[][] orderGrid(int[][] startingGrid) {
         int temp = 0;
         for (int i = 0; i < 21; i++) {
             for (int a = 1; a < 20; a++) {
-                if(startingGrid[a-1][1] > startingGrid[a][1]) {
-                    temp = startingGrid[a-1][1];
-                    startingGrid[a-1][1] = startingGrid[a][1];
+                if (startingGrid[a - 1][1] > startingGrid[a][1]) {
+                    temp = startingGrid[a - 1][1];
+                    startingGrid[a - 1][1] = startingGrid[a][1];
                     startingGrid[a][1] = temp;
-                    temp = startingGrid[a-1][0];
-                    startingGrid[a-1][0] = startingGrid[a][0];
+                    temp = startingGrid[a - 1][0];
+                    startingGrid[a - 1][0] = startingGrid[a][0];
                     startingGrid[a][0] = temp;
 
                 }
@@ -536,5 +532,76 @@ public class Admin {
         }
 
         return (startingGrid);
+    }
+
+    public static void paybackQualiBets(int[][] startingGrid) {
+        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+        String poleWinner = drivers[startingGrid[0][0]];
+        String email = "";
+        int currentBalance = 0;
+        int amountBet = 0;
+        double odds = 0;
+        int oddsForEquation = 0;
+        String chosenDriver = "";
+        int temp = 0;
+        Bets placeholder = betList.get(0);
+        for (int i = 0; i < betList.size(); i++) {
+            placeholder = betList.get(i);
+            email = placeholder.getEmail();
+            chosenDriver = placeholder.getChosenDriver();
+            amountBet = placeholder.getBetAmount();
+            odds = placeholder.getOddsOfBet();
+            odds = odds * 100;
+            oddsForEquation = (int)Math.round(odds);
+            if (chosenDriver.equals(poleWinner)) {
+
+                // Finds users current balance to find new balance
+
+                try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
+
+                    Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+                    String sql = "SELECT * FROM LogIn";
+
+                    ResultSet rs = stmt.executeQuery(sql);
+
+                    while (rs.next()) {
+                        if (email.equals(rs.getString("email"))) {
+                            currentBalance = rs.getInt("Balance");
+                            temp = currentBalance + (((amountBet*100) / oddsForEquation)*2);
+                            currentBalance = temp;
+                        }
+                    }
+                }
+                catch (Exception e) {
+                    System.out.println("Error in the SQL class: " + e);
+                }
+
+                // updates database with new balance
+
+                try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
+
+                    Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+                    String sql = "UPDATE LogIn SET Balance = ? WHERE Email = ?";
+
+                    PreparedStatement preparedStatement = con.prepareStatement(sql);
+                    preparedStatement.setInt(1, currentBalance);
+                    preparedStatement.setString(2, email);
+
+                    int row = preparedStatement.executeUpdate();
+
+                } catch (Exception e) {
+                    System.out.println("Error in the SQL class: " + e);
+                }
+
+                System.out.println("Congratulations! You won your bet on " + placeholder.getChosenDriver() + " for Pole Position.\nYou won £" + (currentBalance - temp) + "\nYour balance is now £" + currentBalance);
+
+            }
+
+            else {
+                System.out.println("You did not win your bet on " + placeholder.getChosenDriver() + " for Pole Position. Better luck next time.");
+            }
+        }
     }
 }
