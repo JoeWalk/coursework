@@ -178,17 +178,11 @@ public class Admin {
 
     public static ArrayList<Integer> getOdds(String typeOfBet, String driver) {
 
-        String dataToGet = "";
-        if(typeOfBet.equals("Pole Position")) {
-            dataToGet = "Grid";
-        }
-        else {
-            dataToGet = "Race";
-        }
+        String session = "Grid";
         ArrayList<Integer> oddsArray = new ArrayList<>();
         String year = "2022";
         ArrayList<Integer> averageOfYears = new ArrayList<>();
-        averageOfYears = getAverageOfYears(driver);
+        averageOfYears = getAverageOfYears(driver, session);
 
         String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
 
@@ -204,17 +198,17 @@ public class Admin {
                 if ((rs.getInt("Year") >= 2016)) {
                     if ((rs.getInt("Year") == 2022) && (rs.getString("GrandPrix").equals(circuits[currentCircuit]))) {
                         for (int i = 0; i < 10; i++) {
-                            oddsArray.add(rs.getInt(dataToGet) - averageOfYears.get(0));
+                            oddsArray.add(rs.getInt("Grid") - averageOfYears.get(0));
                         }
                     }
                     if ((rs.getString("GrandPrix")).equals(circuits[currentCircuit]) && (rs.getInt("Year") != 2022) && (rs.getInt("Year") > 2015)) {
                         for (int i = 0; i < 6; i++) {
-                            oddsArray.add(rs.getInt(dataToGet) - averageOfYears.get(2022 - (rs.getInt("Year"))));
+                            oddsArray.add(rs.getInt("Grid") - averageOfYears.get(2022 - (rs.getInt("Year"))));
                         }
                     }
                     if ((rs.getInt("Year")) == 2022) {
                         for (int i = 0; i < 8; i++) {
-                            oddsArray.add(rs.getInt(dataToGet) - averageOfYears.get(0));
+                            oddsArray.add(rs.getInt("Grid") - averageOfYears.get(0));
                         }
                     }
                 }
@@ -229,7 +223,7 @@ public class Admin {
         return odds;
     }
 
-    public static ArrayList<Integer> getAverageOfYears(String driver) {
+    public static ArrayList<Integer> getAverageOfYears(String driver, String session) {
 
         ArrayList<Integer> averageOfYears = new ArrayList<>();
         ArrayList<Integer> averageArray = new ArrayList<>();
@@ -275,7 +269,7 @@ public class Admin {
             for (int i = 0; i < (years.size()); i++) {
                 while (rs.next()) {
                     if ((rs.getInt("Year") == (years.get(i)))) {
-                        averageArray.add(rs.getInt("Grid"));
+                        averageArray.add(rs.getInt(session));
                     }
                 }
                 for (int a = 0; a < averageArray.size(); a++) {
@@ -435,7 +429,7 @@ public class Admin {
 
         raceBets(email, password);
 
-        // move onto simulating race from here
+        simulateRace(startingGrid);
 
     }
 
@@ -446,7 +440,8 @@ public class Admin {
         boolean valid = false;
         int finalGridPlace = 0;
         int rand = 0;
-        averageOfYears = getAverageOfYears(driver);
+        String session = "Grid";
+        averageOfYears = getAverageOfYears(driver, session);
 
         String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
 
@@ -498,7 +493,6 @@ public class Admin {
     }
 
     public static ArrayList<Integer> fillOutGrid(ArrayList<Integer> qualiArray, ArrayList<Integer> averageOfYear, ArrayList<Integer> openPlaces) {
-        int odds = 0;
         int fill = 0;
         boolean valid1 = false;
         boolean valid2 = false;
@@ -569,7 +563,7 @@ public class Admin {
                 amountBet = placeholder.getBetAmount();
                 odds = placeholder.getOddsOfBet();
                 odds = odds * 100;
-                oddsForEquation = (int)Math.round(odds);
+                oddsForEquation = (int) Math.round(odds);
                 if (chosenDriver.equals(poleWinner)) {
 
                     // Finds users current balance to find new balance
@@ -585,12 +579,11 @@ public class Admin {
                         while (rs.next()) {
                             if (email.equals(rs.getString("email"))) {
                                 currentBalance = rs.getInt("Balance");
-                                temp = currentBalance + (((amountBet*100) / oddsForEquation)*2);
+                                temp = currentBalance + (((amountBet * 100) / oddsForEquation) * 2);
                                 currentBalance = temp;
                             }
                         }
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         System.out.println("Error in the SQL class: " + e);
                     }
 
@@ -614,16 +607,14 @@ public class Admin {
 
                     System.out.println("Congratulations! You won your bet on " + placeholder.getChosenDriver() + " for Pole Position.\nYou won £" + (currentBalance - temp) + "\nYour balance is now £" + currentBalance);
 
-                }
-
-                else {
+                } else {
                     System.out.println("You did not win your bet on " + placeholder.getChosenDriver() + " for Pole Position. Better luck next time.");
                 }
             }
         }
     }
 
-    public static void raceBets (String email, String password) {
+    public static void raceBets(String email, String password) {
 
         double oddsOfBet = 0;
         int betAmount = 0;
@@ -666,11 +657,38 @@ public class Admin {
                 displayRaceBetMenu();
             }
 
-         }
+            if (ans.equals("B")) {
+                typeOfBet = "Finish Race on Podium";
+                for (int i = 0; i < 20; i++) {
+                    String driver = drivers[i];
+                    oddsArray = getOdds(typeOfBet, driver);
+                    odds = finishOnPodium(oddsArray);
+                    finalOddsArray.add(odds);
+                    System.out.println(drivers[i] + ": " + odds);
+                }
+                while (!valid) {
+                    chosenDriver = Main.getInput("Which driver would you like to bet on? Alternatively type Q to quit ");
+                    for (int b = 0; b < drivers.length; b++) {
+                        if ((drivers[b].contains(chosenDriver)) || (chosenDriver.equals("Q"))) {
+                            valid = true;
+                        }
+                    }
+                }
+                valid = false;
 
+                betAmount = getBetAmount(email, password);
+                for (int i = 0; i < drivers.length; i++) {
+                    if (drivers[i].equals(chosenDriver)) {
+                        oddsOfBet = finalOddsArray.get(i);
+                    }
+                }
+                setBet(betAmount, chosenDriver, typeOfBet, email, oddsOfBet);
+                displayRaceBetMenu();
+            }
+        }
     }
 
-    public static double raceWinner (ArrayList<Integer> oddsArray) {
+    public static double raceWinner(ArrayList<Integer> oddsArray) {
 
         double odds = 0;
         double count = 0;
@@ -685,5 +703,100 @@ public class Admin {
         odds = odds / 100;
 
         return odds;
+    }
+
+    public static double finishOnPodium(ArrayList<Integer> oddsArray) {
+        double odds = 0;
+        double count = 0;
+        for (int i = 0; i < oddsArray.size(); i++) {
+            if ((oddsArray.get(i) == 1) || (oddsArray.get(i) == 2) || (oddsArray.get(i) == 3)) {
+                count = count + 1;
+            }
+        }
+        odds = count / oddsArray.size();
+        odds = odds * 100;
+        odds = Math.round(odds);
+        odds = odds / 100;
+
+        return odds;
+    }
+
+    public static void simulateRace(int[][] startingGrid) {
+        String driver = "";
+        int driverNum = 0;
+        ArrayList<Integer> openPlaces = new ArrayList<>();
+        for (int i = 1; i < 21; i++) {
+            openPlaces.add(i);
+        }
+        for (int i = 19; i > -1; i--) {
+            driver = drivers[startingGrid[i][0]];
+            driverNum = i;
+            startingGrid[i][1] = getRaceResults(startingGrid, openPlaces, driver, driverNum);
+        }
+    }
+
+    public static int getRaceResults(int[][] startingGrid, ArrayList<Integer> openPlaces, String driver, int driverNum) {
+        ArrayList<Integer> raceArray = new ArrayList<>();
+        ArrayList<Integer> averageOfYears = new ArrayList<>();
+        boolean valid = false;
+        int finalGridPlace = 0;
+        int rand = 0;
+        String session = "Race";
+        averageOfYears = getAverageOfYears(driver, session);
+
+        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+
+        try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
+
+            Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+            String sql = "SELECT * FROM " + driver;
+
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while (rs.next()) {
+                if ((rs.getInt("Year") >= 2016)) {
+                    if ((rs.getInt("Year") == 2022) && (rs.getInt("Grid") == startingGrid[driverNum][1])) {
+                        for (int i = 0; i < 15; i++) {
+                            raceArray.add(rs.getInt("Race") - rs.getInt("Grid"));
+                        }
+                    }
+                    if (rs.getInt("Grid") == startingGrid[driverNum][1]) {
+                        for (int i = 0; i < 10; i++) {
+                            raceArray.add(rs.getInt("Race") - rs.getInt("Grid"));
+                        }
+                    }
+                    if ((rs.getInt("Year") == 2022) && (rs.getString("GrandPrix").equals(circuits[currentCircuit]))) {
+                        for (int i = 0; i < 10; i++) {
+                            raceArray.add(rs.getInt("Race") - rs.getInt("Grid"));
+                        }
+                    }
+                    if ((rs.getString("GrandPrix")).equals(circuits[currentCircuit]) && (rs.getInt("Year") != 2022) && (rs.getInt("Year") > 2015)) {
+                        for (int i = 0; i < 6; i++) {
+                            raceArray.add(rs.getInt("Race") - rs.getInt("Grid"));
+                        }
+                    }
+                    if ((rs.getInt("Year")) == 2022) {
+                        for (int i = 0; i < 8; i++) {
+                            raceArray.add(rs.getInt("Race") - rs.getInt("Grid"));
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error in the SQL class: " + e);
+        }
+
+        raceArray = fillOutRaceGrid(raceArray, averageOfYears, openPlaces);
+        return (driverNum);
+
+    }
+
+    public static ArrayList<Integer> fillOutRaceGrid(ArrayList<Integer> raceArray, ArrayList<Integer> averageOfYears, ArrayList<Integer> openPlaces) {
+        ArrayList<Integer> newRaceArray = new ArrayList<>();
+        for (int i = 0; i < raceArray.size(); i++) {
+
+        }
+        return(newRaceArray);
     }
 }
