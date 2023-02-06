@@ -733,13 +733,19 @@ public class Admin {
             driverNum = i;
             startingGrid[i][1] = getRaceResults(startingGrid, openPlaces, driver, driverNum);
         }
+
+        orderGrid(startingGrid);
+        System.out.println("\nRace Results:\n");
+        for (int i = 0; i < 20; i++) {
+            System.out.println(drivers[startingGrid[i][0]] + " - " + startingGrid[i][1]);
+        }
     }
 
     public static int getRaceResults(int[][] startingGrid, ArrayList<Integer> openPlaces, String driver, int driverNum) {
+        int finalPosition = 0;
         ArrayList<Integer> raceArray = new ArrayList<>();
         ArrayList<Integer> averageOfYears = new ArrayList<>();
         boolean valid = false;
-        int finalGridPlace = 0;
         int rand = 0;
         String session = "Race";
         averageOfYears = getAverageOfYears(driver, session);
@@ -757,27 +763,27 @@ public class Admin {
             while (rs.next()) {
                 if ((rs.getInt("Year") >= 2016)) {
                     if ((rs.getInt("Year") == 2022) && (rs.getInt("Grid") == startingGrid[driverNum][1])) {
-                        for (int i = 0; i < 15; i++) {
+                        for (int i = 0; i < 60; i++) {
                             raceArray.add(rs.getInt("Race") - rs.getInt("Grid"));
                         }
                     }
                     if (rs.getInt("Grid") == startingGrid[driverNum][1]) {
-                        for (int i = 0; i < 10; i++) {
+                        for (int i = 0; i < 40; i++) {
                             raceArray.add(rs.getInt("Race") - rs.getInt("Grid"));
                         }
                     }
                     if ((rs.getInt("Year") == 2022) && (rs.getString("GrandPrix").equals(circuits[currentCircuit]))) {
-                        for (int i = 0; i < 10; i++) {
+                        for (int i = 0; i < 40; i++) {
                             raceArray.add(rs.getInt("Race") - rs.getInt("Grid"));
                         }
                     }
                     if ((rs.getString("GrandPrix")).equals(circuits[currentCircuit]) && (rs.getInt("Year") != 2022) && (rs.getInt("Year") > 2015)) {
-                        for (int i = 0; i < 6; i++) {
+                        for (int i = 0; i < 24; i++) {
                             raceArray.add(rs.getInt("Race") - rs.getInt("Grid"));
                         }
                     }
                     if ((rs.getInt("Year")) == 2022) {
-                        for (int i = 0; i < 8; i++) {
+                        for (int i = 0; i < 32; i++) {
                             raceArray.add(rs.getInt("Race") - rs.getInt("Grid"));
                         }
                     }
@@ -787,15 +793,53 @@ public class Admin {
             System.out.println("Error in the SQL class: " + e);
         }
 
-        raceArray = fillOutRaceGrid(raceArray, averageOfYears, openPlaces);
-        return (driverNum);
-
+        raceArray = fillOutRaceGrid(raceArray, startingGrid, driverNum, openPlaces);
+        Random random = new Random();
+        while (!valid) {
+            rand = random.nextInt(raceArray.size());
+            finalPosition = raceArray.get(rand);
+            for (int a = 0; a < openPlaces.size(); a++) {
+                if (openPlaces.get(a) == finalPosition) {
+                    openPlaces.remove(a);
+                    valid = true;
+                    return (finalPosition);
+                }
+            }
+        }
+        return (finalPosition);
     }
 
-    public static ArrayList<Integer> fillOutRaceGrid(ArrayList<Integer> raceArray, ArrayList<Integer> averageOfYears, ArrayList<Integer> openPlaces) {
+    public static ArrayList<Integer> fillOutRaceGrid(ArrayList<Integer> raceArray, int[][] startingGrid, int driverNum, ArrayList<Integer> openPlaces) {
         ArrayList<Integer> newRaceArray = new ArrayList<>();
+        boolean valid1 = false;
+        boolean valid2 = false;
+        int temp  = 0;
         for (int i = 0; i < raceArray.size(); i++) {
-
+            temp = startingGrid[driverNum][1] - raceArray.get(i);
+            if ((temp >= 1) && (temp <= 20)) {
+                for (int a = 0; a < openPlaces.size(); a++) {
+                    if (temp == openPlaces.get(a)) {
+                        newRaceArray.add(temp);
+                    }
+                }
+            }
+        }
+        for (int i = 1; i < 21; i++) {
+            valid1 = false;
+            valid2 = false;
+            for (int length = 0; length < newRaceArray.size(); length++) {
+                if (newRaceArray.get(length) == i) {
+                    valid1 = true;
+                }
+            }
+            for (int a = 0; a < openPlaces.size(); a++) {
+                if (openPlaces.get(a) == i) {
+                    valid2 = true;
+                }
+            }
+            if ((valid1 == false) && (valid2 == true)) {
+                newRaceArray.add(i);
+            }
         }
         return(newRaceArray);
     }
