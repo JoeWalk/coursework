@@ -38,6 +38,12 @@ public class Main {
             ans = getInput("Enter the letter of the option you would like to chose");
             if (ans.equals("A")) {
                 Admin.preQualifyingBets(email, password);
+                System.out.println("");
+                Admin.displayMainMenu();
+            }
+
+            if (ans.equals("B")) {
+
             }
         }
 
