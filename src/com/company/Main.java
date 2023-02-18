@@ -43,7 +43,15 @@ public class Main {
             }
 
             if (ans.equals("B")) {
+                explanationOfF1();
+                System.out.println("");
+                Admin.displayMainMenu();
+            }
 
+            if (ans.equals("C")) {
+                explanationOfBettingSystem();
+                System.out.println("");
+                Admin.displayMainMenu();
             }
         }
 
@@ -108,6 +116,19 @@ public class Main {
             valid = true;
         }
         return valid;
+    }
+
+    public static void explanationOfF1 () {
+        System.out.println("There are 20 drivers in Formula 1 that race in 22 different circuits. " +
+                "Each time, before they race, they must compete in qualifying to determine the order they start the race in. " +
+                "The winner of qualifying starts in pole position (first place). " +
+                "The higher they start on the grid, the more chance they have of winning. ");
+    }
+
+    public  static void explanationOfBettingSystem () {
+        System.out.println("The odds of your bet will be displayed before you place it. " +
+                "Your winnings will be how much you bet, multiplied by (the odds plus 1), then all doubled. " +
+                "The money you bet will be removed from your account as soon as you place the bet and any winnings will be put into your account as soon as you win them.");
     }
 
 
