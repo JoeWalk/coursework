@@ -47,7 +47,7 @@ public class Admin {
 
     public static void writeToDatabase(String email, String password) {
 
-        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+        String DatabaseLocation = "jdbc:ucanaccess://C://Users//kenny//Documents//ComputerScienceCoursework//database1.accdb";
 
         try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
 
@@ -69,7 +69,7 @@ public class Admin {
     public static String showBalance(String email) {
 
         String balance = "";
-        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+        String DatabaseLocation = "jdbc:ucanaccess://C://Users//kenny//Documents//ComputerScienceCoursework//database1.accdb";
 
         try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
 
@@ -132,6 +132,7 @@ public class Admin {
                 valid = false;
 
                 if (!chosenDriver.equals("Q")) {
+                    betAmount = getBetAmount(email, password);
                     for (int i = 0; i < drivers.length; i++) {
                         if (drivers[i].equals(chosenDriver)) {
                             oddsOfBet = finalOddsArray.get(i);
@@ -139,7 +140,6 @@ public class Admin {
                     }
                     setBet(betAmount, chosenDriver, typeOfBet, email, oddsOfBet);
                 }
-                betAmount = getBetAmount(email, password);
 
                 displayBetMenu();
             }
@@ -166,13 +166,19 @@ public class Admin {
 
     public static ArrayList<Integer> getOdds(String typeOfBet, String driver) {
 
-        String session = "Grid";
+        String session;
+        if (typeOfBet.equals("Pole Position")) {
+            session = "Grid";
+        } else {
+            session = "Race";
+        }
+
         ArrayList<Integer> oddsArray = new ArrayList<>();
         String year = "2022";
         ArrayList<Integer> averageOfYears = new ArrayList<>();
         averageOfYears = getAverageOfYears(driver, session);
 
-        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+        String DatabaseLocation = "jdbc:ucanaccess://C://Users//kenny//Documents//ComputerScienceCoursework//database1.accdb";
 
         try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
 
@@ -186,17 +192,17 @@ public class Admin {
                 if ((rs.getInt("Year") >= 2016)) {
                     if ((rs.getInt("Year") == 2022) && (rs.getString("GrandPrix").equals(circuits[currentCircuit]))) {
                         for (int i = 0; i < 10; i++) {
-                            oddsArray.add(rs.getInt("Grid") - averageOfYears.get(0));
+                            oddsArray.add(rs.getInt(session) - averageOfYears.get(0));
                         }
                     }
                     if ((rs.getString("GrandPrix")).equals(circuits[currentCircuit]) && (rs.getInt("Year") != 2022) && (rs.getInt("Year") > 2015)) {
                         for (int i = 0; i < 6; i++) {
-                            oddsArray.add(rs.getInt("Grid") - averageOfYears.get(2022 - (rs.getInt("Year"))));
+                            oddsArray.add(rs.getInt(session) - averageOfYears.get(2022 - (rs.getInt("Year"))));
                         }
                     }
                     if ((rs.getInt("Year")) == 2022) {
                         for (int i = 0; i < 8; i++) {
-                            oddsArray.add(rs.getInt("Grid") - averageOfYears.get(0));
+                            oddsArray.add(rs.getInt(session) - averageOfYears.get(0));
                         }
                     }
                 }
@@ -220,7 +226,7 @@ public class Admin {
         boolean valid = false;
         int average = 0;
 
-        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+        String DatabaseLocation = "jdbc:ucanaccess://C://Users//kenny//Documents//ComputerScienceCoursework//database1.accdb";
 
         try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
 
@@ -324,7 +330,7 @@ public class Admin {
         int amountBet = 0;
         int currentBalance = 0;
 
-        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+        String DatabaseLocation = "jdbc:ucanaccess://C://Users//kenny//Documents//ComputerScienceCoursework//database1.accdb";
 
         try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
 
@@ -438,7 +444,7 @@ public class Admin {
         String session = "Grid";
         averageOfYears = getAverageOfYears(driver, session);
 
-        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+        String DatabaseLocation = "jdbc:ucanaccess://C://Users//kenny//Documents//ComputerScienceCoursework//database1.accdb";
 
         try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
 
@@ -541,9 +547,10 @@ public class Admin {
     }
 
     public static void paybackQualiBets(int[][] startingGrid) {
-        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+        String DatabaseLocation = "jdbc:ucanaccess://C://Users//kenny//Documents//ComputerScienceCoursework//database1.accdb";
         String poleWinner = drivers[startingGrid[0][0]];
         String email = "";
+        int winnings = 0;
         int currentBalance = 0;
         int amountBet = 0;
         double odds = 0;
@@ -575,6 +582,7 @@ public class Admin {
                             if (email.equals(rs.getString("email"))) {
                                 currentBalance = rs.getInt("Balance");
                                 temp = currentBalance + (((amountBet * 100) / oddsForEquation) * 2);
+                                winnings = ((amountBet * 100) / oddsForEquation) * 2;
                                 currentBalance = temp;
                             }
                         }
@@ -600,7 +608,7 @@ public class Admin {
                         System.out.println("Error in the SQL class: " + e);
                     }
 
-                    System.out.println("Congratulations! You won your bet on " + placeholder.getChosenDriver() + " for Pole Position.\nYou won £" + (currentBalance - temp) + "\nYour balance is now £" + currentBalance);
+                    System.out.println("Congratulations! You won your bet on " + placeholder.getChosenDriver() + " for Pole Position.\nYou won £" + (winnings) + "\nYour balance is now £" + currentBalance);
 
                 } else {
                     System.out.println("You did not win your bet on " + placeholder.getChosenDriver() + " for Pole Position. Better luck next time.");
@@ -752,7 +760,7 @@ public class Admin {
         String session = "Race";
         averageOfYears = getAverageOfYears(driver, session);
 
-        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+        String DatabaseLocation = "jdbc:ucanaccess://C://Users//kenny//Documents//ComputerScienceCoursework//database1.accdb";
 
         try (Connection con = DriverManager.getConnection(DatabaseLocation)) {
 
@@ -847,7 +855,7 @@ public class Admin {
     }
 
     public static void paybackRaceBets(int[][] startingGrid) {
-        String DatabaseLocation = "jdbc:ucanaccess://X://My Documents//Computer Science//Coursework//database1.accdb";
+        String DatabaseLocation = "jdbc:ucanaccess://C://Users//kenny//Documents//ComputerScienceCoursework//database1.accdb";
         String raceWinner = drivers[startingGrid[0][0]];
         String podiums = drivers[startingGrid[0][0]] + drivers[startingGrid[1][0]] + drivers[startingGrid[2][0]];
         String email;
